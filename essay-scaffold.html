@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Essay Builder — Values at Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --parchment: #f5f0e8;
+    --warm: #c8a96e;
+    --accent: #7c4b1e;
+    --soft: #e8dfc8;
+    --muted: #8a7a60;
+    --green: #3a6b3a;
+    --red: #8b2020;
+    --shadow: rgba(26,18,8,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--parchment);
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(200,169,110,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(124,75,30,0.10) 0%, transparent 55%);
+    font-family: 'Source Serif 4', Georgia, serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    color: var(--accent);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  header p {
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-style: italic;
+    font-size: 1rem;
+  }
+
+  .progress-bar-wrap {
+    max-width: 700px;
+    margin: 0 auto 2rem;
+    animation: fadeDown 0.9s ease both;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .progress-track {
+    height: 6px;
+    background: var(--soft);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--warm), var(--accent));
+    border-radius: 99px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .stages {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .stage {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px var(--shadow);
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .stage:nth-child(1) { animation-delay: 0.1s; }
+  .stage:nth-child(2) { animation-delay: 0.2s; }
+  .stage:nth-child(3) { animation-delay: 0.3s; }
+  .stage:nth-child(4) { animation-delay: 0.4s; }
+
+  .stage.active { box-shadow: 0 4px 28px rgba(124,75,30,0.22); }
+  .stage.done .stage-header { background: var(--green); }
+  .stage.done .stage-num { background: rgba(255,255,255,0.25); }
+
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--accent);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s;
+  }
+
+  .stage-header:hover { filter: brightness(1.08); }
+
+  .stage-num {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .stage-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: white;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .stage-subtitle {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.75);
+    font-style: italic;
+  }
+
+  .chevron {
+    color: white;
+    font-size: 1rem;
+    transition: transform 0.3s;
+  }
+
+  .stage.open .chevron { transform: rotate(180deg); }
+
+  .stage-body {
+    display: none;
+    padding: 1.4rem 1.4rem 1.6rem;
+  }
+
+  .stage.open .stage-body { display: block; }
+
+  /* Scaffold box */
+  .scaffold {
+    background: #fffdf7;
+    border-left: 3px solid var(--warm);
+    border-radius: 0 8px 8px 0;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+  }
+
+  .scaffold-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .scaffold ul {
+    padding-left: 1.2rem;
+    color: var(--muted);
+    line-height: 1.8;
+    font-size: 0.88rem;
+  }
+
+  .scaffold ul li { margin-bottom: 0.2rem; }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .chip {
+    background: var(--soft);
+    border: 1px solid var(--warm);
+    color: var(--accent);
+    border-radius: 99px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    transition: background 0.2s, color 0.2s;
+    user-select: none;
+  }
+
+  .chip:hover { background: var(--accent); color: white; }
+
+  .chip-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    font-style: italic;
+  }
+
+  textarea {
+    width: 100%;
+    border: 1.5px solid var(--soft);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: #fdfaf4;
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.7;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  textarea:focus {
+    border-color: var(--warm);
+    box-shadow: 0 0 0 3px rgba(200,169,110,0.18);
+  }
+
+  .word-count {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.3rem;
+    font-style: italic;
+  }
+
+  .word-count.warn { color: var(--red); }
+
+  .btn-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.9rem;
+  }
+
+  .btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.4rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .btn:hover { background: #5e3614; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  /* Final preview */
+  #preview-section {
+    max-width: 700px;
+    margin: 2rem auto 0;
+    display: none;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  #preview-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .essay-output {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 20px var(--shadow);
+    line-height: 1.9;
+    font-size: 0.97rem;
+  }
+
+  .essay-output p {
+    margin-bottom: 1rem;
+    text-indent: 1.5em;
+  }
+
+  .essay-output p:first-child { text-indent: 0; }
+
+  .checklist {
+    background: #f0f7f0;
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    margin-top: 1.4rem;
+  }
+
+  .checklist h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    color: var(--green);
+    margin-bottom: 0.8rem;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+    color: var(--ink);
+  }
+
+  .check-item .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #ccc;
+  }
+
+  .check-item.pass .dot { background: var(--green); }
+  .check-item.fail .dot { background: var(--red); }
+
+  .total-wc {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.8rem;
+    font-style: italic;
+  }
+
+  .total-wc.ok { color: var(--green); font-weight: 600; }
+  .total-wc.bad { color: var(--red); }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 500px) {
+    .stage-body { padding: 1rem; }
+    .essay-output { padding: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Essay Builder</h1>
+  <p>"Children learn important values at home." — Do you agree?</p>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-label">
+    <span>Your progress</span>
+    <span id="prog-text">0 / 4 paragraphs</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="prog-fill"></div>
+  </div>
+</div>
+
+<div class="stages" id="stages">
+
+  <!-- PARAGRAPH 1 -->
+  <div class="stage open" id="s1">
+    <div class="stage-header" onclick="toggleStage('s1')">
+      <div class="stage-num">1</div>
+      <div>
+        <div class="stage-title">Introduction</div>
+        <div class="stage-subtitle">General context + your opinion</div>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="stage-body">
+      <div class="scaffold">
+        <div class="scaffold-title">🗑️ What to put in your dumpster (brainstorm)</div>
+        <ul>
+          <li>What is the <strong>topic</strong> in general? (family, upbringing, society…)</li>
+          <li>What do <strong>most people think</strong> about this? (common belief)</li>
+          <li>What is <strong>your opinion</strong>? Agree or disagree?</li>
+          <li>End with a clear <strong>thesis sentence</strong> — one sentence that states your view.</li>
+        </ul>
+      </div>
+      <div class="chip-label">💡 Click a phrase to add it to your paragraph:</div>
+      <div class="chips">
+        <span class="chip" onclick="addChip('t1','Throughout history, the family has been')">Throughout history, the family has been…</span>
+        <span class="chip" onclick="addChip('t1','It is widely acknowledged that')">It is widely acknowledged that…</span>
+        <span class="chip" onclick="addChip('t1','I firmly believe that')">I firmly believe that…</span>
+        <span class="chip" onclick="addChip('t1','In my view, the home remains')">In my view, the home remains…</span>
+        <span class="chip" onclick="addChip('t1','domestic sphere')">domestic sphere</span>
+        <span class="chip" onclick="addChip('t1','moral foundation')">moral foundation</span>
+        <span class="chip" onclick="addChip('t1','instil values')">instil values</span>
+      </div>
+      <textarea id="t1" placeholder="Write your introduction here…" oninput="updateWC('t1','wc1')"></textarea>
+      <div class="word-count" id="wc1">0 words</div>
+      <div class="btn-row"><button class="btn" onclick="completeStage('s1','s2','t1')">Next →</button></div>
+    </div>
+  </div>
+
+  <!-- PARAGRAPH 2 -->
+  <div class="stage" id="s2">
+    <div class="stage-header" onclick="toggleStage('s2')">
+      <div class="stage-num">2</div>
+      <div>
+        <div class="stage-title">First Reason</div>
+        <div class="stage-subtitle">State it → Explain it → Give an example</div>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="stage-body">
+      <div class="scaffold">
+        <div class="scaffold-title">🗑️ What to put in your dumpster</div>
+        <ul>
+          <li><strong>Topic sentence:</strong> State your first reason clearly.</li>
+          <li><strong>Explanation:</strong> Why is this true? How does it happen?</li>
+          <li><strong>Example / detail:</strong> What do children observe? What do parents do?</li>
+          <li>Use a <strong>connector</strong> to start (First and foremost / To begin with…)</li>
+          <li>Try a <strong>conditional sentence</strong>: <em>If a parent… , a child will…</em></li>
+        </ul>
+      </div>
+      <div class="chip-label">💡 Useful phrases:</div>
+      <div class="chips">
+        <span class="chip" onclick="addChip('t2','First and foremost,')">First and foremost,</span>
+        <span class="chip" onclick="addChip('t2','To begin with,')">To begin with,</span>
+        <span class="chip" onclick="addChip('t2','If a parent consistently demonstrates, their child will inevitably')">If a parent consistently demonstrates…, their child will inevitably…</span>
+        <span class="chip" onclick="addChip('t2','role model')">role model</span>
+        <span class="chip" onclick="addChip('t2','internalise')">internalise</span>
+        <span class="chip" onclick="addChip('t2','emulate adult behaviour')">emulate adult behaviour</span>
+        <span class="chip" onclick="addChip('t2','perseverance and integrity')">perseverance and integrity</span>
+      </div>
+      <textarea id="t2" placeholder="Write your first reason here…" oninput="updateWC('t2','wc2')"></textarea>
+      <div class="word-count" id="wc2">0 words</div>
+      <div class="btn-row"><button class="btn" onclick="completeStage('s2','s3','t2')">Next →</button></div>
+    </div>
+  </div>
+
+  <!-- PARAGRAPH 3 -->
+  <div class="stage" id="s3">
+    <div class="stage-header" onclick="toggleStage('s3')">
+      <div class="stage-num">3</div>
+      <div>
+        <div class="stage-title">Second Reason</div>
+        <div class="stage-subtitle">State it → Explain it → Contrast with school/outside</div>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="stage-body">
+      <div class="scaffold">
+        <div class="scaffold-title">🗑️ What to put in your dumpster</div>
+        <ul>
+          <li><strong>Topic sentence:</strong> Your second, different reason.</li>
+          <li><strong>Explain:</strong> What does the home offer that other places cannot?</li>
+          <li><strong>Present perfect:</strong> <em>Children have always been shaped by…</em></li>
+          <li>Use a <strong>connector</strong> to link to paragraph 2 (Furthermore / In addition / Moreover…)</li>
+          <li>Try to use at least one <strong>low-frequency word</strong>.</li>
+        </ul>
+      </div>
+      <div class="chip-label">💡 Useful phrases:</div>
+      <div class="chips">
+        <span class="chip" onclick="addChip('t3','Furthermore,')">Furthermore,</span>
+        <span class="chip" onclick="addChip('t3','Moreover,')">Moreover,</span>
+        <span class="chip" onclick="addChip('t3','In addition,')">In addition,</span>
+        <span class="chip" onclick="addChip('t3','Children have always been profoundly moulded by')">Children have always been profoundly moulded by…</span>
+        <span class="chip" onclick="addChip('t3','intimate environment')">intimate environment</span>
+        <span class="chip" onclick="addChip('t3','replicate')">replicate</span>
+        <span class="chip" onclick="addChip('t3','emotional bonds')">emotional bonds</span>
+        <span class="chip" onclick="addChip('t3','resonate deeply')">resonate deeply</span>
+        <span class="chip" onclick="addChip('t3','institutional')">institutional</span>
+      </div>
+      <textarea id="t3" placeholder="Write your second reason here…" oninput="updateWC('t3','wc3')"></textarea>
+      <div class="word-count" id="wc3">0 words</div>
+      <div class="btn-row"><button class="btn" onclick="completeStage('s3','s4','t3')">Next →</button></div>
+    </div>
+  </div>
+
+  <!-- PARAGRAPH 4 -->
+  <div class="stage" id="s4">
+    <div class="stage-header" onclick="toggleStage('s4')">
+      <div class="stage-num">4</div>
+      <div>
+        <div class="stage-title">Conclusion</div>
+        <div class="stage-subtitle">Restate opinion + closing thought</div>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="stage-body">
+      <div class="scaffold">
+        <div class="scaffold-title">🗑️ What to put in your dumpster</div>
+        <ul>
+          <li><strong>Restate your opinion</strong> — but in different words from the introduction!</li>
+          <li>Acknowledge the <strong>other side briefly</strong> using a concessive connector (Although / Even though / While…)</li>
+          <li>End with a <strong>strong final sentence</strong> that sticks in the reader's mind.</li>
+          <li>Do NOT introduce new arguments here.</li>
+        </ul>
+      </div>
+      <div class="chip-label">💡 Useful phrases:</div>
+      <div class="chips">
+        <span class="chip" onclick="addChip('t4','In conclusion,')">In conclusion,</span>
+        <span class="chip" onclick="addChip('t4','To conclude,')">To conclude,</span>
+        <span class="chip" onclick="addChip('t4','Although external influences undeniably play a role,')">Although external influences undeniably play a role,</span>
+        <span class="chip" onclick="addChip('t4','the home remains the indispensable cornerstone of')">the home remains the indispensable cornerstone of…</span>
+        <span class="chip" onclick="addChip('t4','supplementary')">supplementary</span>
+        <span class="chip" onclick="addChip('t4','moral development')">moral development</span>
+        <span class="chip" onclick="addChip('t4','paramount importance')">paramount importance</span>
+      </div>
+      <textarea id="t4" placeholder="Write your conclusion here…" oninput="updateWC('t4','wc4')"></textarea>
+      <div class="word-count" id="wc4">0 words</div>
+      <div class="btn-row"><button class="btn" onclick="buildEssay()">✦ See My Essay</button></div>
+    </div>
+  </div>
+
+</div><!-- /stages -->
+
+<!-- FINAL PREVIEW -->
+<div id="preview-section">
+  <h2>✦ Your Essay</h2>
+  <div class="essay-output" id="essay-output"></div>
+
+  <div class="checklist" id="checklist">
+    <h3>📋 Self-Check</h3>
+    <div id="check-items"></div>
+    <div class="total-wc" id="total-wc"></div>
+  </div>
+
+  <div class="btn-row" style="max-width:700px;margin:1rem auto 0;">
+    <button class="btn" onclick="resetAll()">✎ Edit my essay</button>
+  </div>
+</div>
+
+<script>
+  function toggleStage(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+  }
+
+  function countWords(text) {
+    return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+  }
+
+  function updateWC(tid, wcid) {
+    const n = countWords(document.getElementById(tid).value);
+    const el = document.getElementById(wcid);
+    el.textContent = n + ' words';
+    el.className = 'word-count' + (n > 80 ? ' warn' : '');
+  }
+
+  function addChip(tid, text) {
+    const ta = document.getElementById(tid);
+    const v = ta.value;
+    ta.value = v + (v && !v.endsWith(' ') ? ' ' : '') + text + ' ';
+    ta.focus();
+    updateWC(tid, 'wc' + tid.slice(1));
+  }
+
+  function completeStage(current, next, tid) {
+    const text = document.getElementById(tid).value.trim();
+    if (text.length < 10) {
+      alert('Please write at least a sentence before moving on! ✍️');
+      return;
+    }
+    const cur = document.getElementById(current);
+    cur.classList.remove('open');
+    cur.classList.add('done');
+
+    const nxt = document.getElementById(next);
+    nxt.classList.add('open');
+    nxt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = document.querySelectorAll('.stage.done').length;
+    document.getElementById('prog-fill').style.width = (done / 4 * 100) + '%';
+    document.getElementById('prog-text').textContent = done + ' / 4 paragraphs';
+  }
+
+  function buildEssay() {
+    const t4 = document.getElementById('t4').value.trim();
+    if (t4.length < 10) {
+      alert('Please write your conclusion before finishing! ✍️');
+      return;
+    }
+
+    const paragraphs = ['t1','t2','t3','t4'].map(id => document.getElementById(id).value.trim());
+
+    // Show essay
+    const out = document.getElementById('essay-output');
+    out.innerHTML = paragraphs.map(p => `<p>${p}</p>`).join('');
+
+    // Checklist
+    const fullText = paragraphs.join(' ');
+    const wc = countWords(fullText);
+
+    const connectors = ['first and foremost','furthermore','moreover','in addition','however','although','even though','in conclusion','to conclude','as a result','consequently','therefore','nevertheless','on the other hand','to begin with','in contrast'];
+    const foundConnectors = connectors.filter(c => fullText.toLowerCase().includes(c));
+
+    const lowFreq = ['domestic','internalise','emulate','replicate','indispensable','paramount','perseverance','integrity','supplementary','institutional','moulded','resonate','cornerstone','profound','inevitably'];
+    const foundLow = lowFreq.filter(w => fullText.toLowerCase().includes(w));
+
+    const hasConditional = /if .{3,40}(,|will|would|can|may)/i.test(fullText);
+    const hasPresentPerf = /\b(has|have|had)\s+\w+(ed|en)\b/i.test(fullText);
+
+    const checks = [
+      { label: '120–200 words total', pass: wc >= 120 && wc <= 200 },
+      { label: `At least 3 connectors (found: ${foundConnectors.slice(0,4).join(', ') || 'none'})`, pass: foundConnectors.length >= 3 },
+      { label: `At least 4 low-frequency words (found: ${foundLow.slice(0,5).join(', ') || 'none'})`, pass: foundLow.length >= 4 },
+      { label: 'A conditional sentence (If… , …will/would…)', pass: hasConditional },
+      { label: 'Present perfect tense (has/have + past participle)', pass: hasPresentPerf },
+      { label: '4 paragraphs written', pass: paragraphs.filter(p => p.length > 10).length === 4 },
+    ];
+
+    const ci = document.getElementById('check-items');
+    ci.innerHTML = checks.map(c =>
+      `<div class="check-item ${c.pass ? 'pass' : 'fail'}">
+        <div class="dot"></div>
+        <span>${c.label}</span>
+      </div>`
+    ).join('');
+
+    const twc = document.getElementById('total-wc');
+    twc.textContent = `Total: ${wc} words`;
+    twc.className = 'total-wc ' + (wc >= 120 && wc <= 200 ? 'ok' : 'bad');
+
+    document.getElementById('s4').classList.add('done');
+    document.getElementById('s4').classList.remove('open');
+    updateProgress();
+
+    const ps = document.getElementById('preview-section');
+    ps.style.display = 'block';
+    setTimeout(() => ps.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }
+
+  function resetAll() {
+    ['s1','s2','s3','s4'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('done','open');
+    });
+    document.getElementById('s1').classList.add('open');
+    ['t1','t2','t3','t4'].forEach((id,i) => {
+      document.getElementById(id).value = '';
+      document.getElementById('wc'+(i+1)).textContent = '0 words';
+    });
+    document.getElementById('preview-section').style.display = 'none';
+    document.getElementById('prog-fill').style.width = '0%';
+    document.getElementById('prog-text').textContent = '0 / 4 paragraphs';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
